@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"os"
 	"os/signal"
 	"runtime"
@@ -14,24 +14,53 @@ import (
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
 	"github.com/jasonblanchard/di-velocity/src/op"
 	"github.com/jasonblanchard/di-velocity/src/utils"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	nats "github.com/nats-io/nats.go"
 )
 
+var natsQueue = "valocity"
+
 func main() {
-	fmt.Println(">>> Starting <<<")
+	pretty := flag.Bool("pretty", false, "Pretty print logs")
+	debugLoglevel := flag.Bool("debug", false, "sets log level to debug")
+
+	flag.Parse()
+
+	if *pretty == true {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if *debugLoglevel {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	log.Info().Msg(">>> Starting <<<")
 
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
-		panic(err)
+		log.Fatal().
+			Err(err).
+			Msg("")
+		os.Exit(1)
 	}
 
-	nc.Subscribe("insights.get.velocity", func(m *nats.Msg) {
-		fmt.Println("receiving " + m.Subject)
+	nc.QueueSubscribe("insights.get.velocity", natsQueue, func(m *nats.Msg) {
+		log.Info().
+			Str("subject", m.Subject).
+			Msg("received")
 		requestMessage := &insightsMessage.GetVelocityRequest{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
-			panic(err)
+			log.Error().
+				Str("subject", m.Subject).
+				Err(err).
+				Msg("")
+
+			return
+			// TODO: Respond with error type
 		}
 
 		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
@@ -39,7 +68,10 @@ func main() {
 
 		dailyVelocities, err := op.GetDailyVelocity(normalizedStart, normalizedEnd)
 		if err != nil {
-			panic(err)
+			log.Error().
+				Str("subject", m.Subject).
+				Err(err).
+				Msg("")
 		}
 
 		payload := make([]*insights.GetVelocityResponse_DailyVelocity, len(dailyVelocities))
@@ -59,7 +91,10 @@ func main() {
 
 		response, err := proto.Marshal(responseMessage)
 		if err != nil {
-			panic(err)
+			log.Error().
+				Str("subject", m.Subject).
+				Err(err).
+				Msg("")
 		}
 
 		nc.Publish(m.Reply, response)
@@ -73,5 +108,7 @@ func main() {
 		nc.Drain()
 		os.Exit(0)
 	}()
+
+	log.Info().Msg("Ready to receive messages")
 	runtime.Goexit()
 }
