@@ -3,8 +3,8 @@ package domain
 import (
 	"time"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jasonblanchard/di-velocity/src/di_messages/insights"
+	"github.com/jasonblanchard/di-velocity/src/utils"
 )
 
 // DailyVelocity represents a velocity score on a partiular day
@@ -22,10 +22,10 @@ func (dailyVelocities DailyVelocities) ToDtoPayload() []*insights.GetVelocityRes
 	payload := make([]*insights.GetVelocityResponse_DailyVelocity, len(dailyVelocities))
 
 	for i := 0; i < len(dailyVelocities); i++ {
+		day := utils.TimeToProtoTime(dailyVelocities[i].Day)
+
 		payload[i] = &insights.GetVelocityResponse_DailyVelocity{
-			Day: &timestamp.Timestamp{
-				Seconds: dailyVelocities[i].Day.Unix(),
-			},
+			Day:   &day,
 			Score: dailyVelocities[i].Score,
 		}
 	}

@@ -7,9 +7,9 @@ import (
 
 	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
+	"github.com/jasonblanchard/di-velocity/src/utils"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	nats "github.com/nats-io/nats.go"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -24,18 +24,15 @@ func TestIntegration(t *testing.T) {
 		Convey("works", func() {
 			nc.Request("insights.store.drop", []byte(""), 3*time.Second)
 
-			updatedAtDate, err := time.Parse(time.RFC3339, "2020-01-01T10:02:03+04:00")
-			if err != nil {
-				panic(err)
-			}
+			updatedAtDate := time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC)
+			uptdateAt := utils.TimeToProtoTime(updatedAtDate)
+
 			updateEntryMessage := &entryMessage.InfoEntryUpdated{
 				Payload: &entryMessage.InfoEntryUpdated_Payload{
 					Id:        "123",
 					Text:      "Some updated entry",
 					CreatorId: "1",
-					UpdatedAt: &timestamp.Timestamp{
-						Seconds: int64(updatedAtDate.Unix()),
-					},
+					UpdatedAt: &uptdateAt,
 				},
 			}
 
@@ -45,33 +42,22 @@ func TestIntegration(t *testing.T) {
 			}
 
 			_, err = nc.Request("info.entry.updated", updateEntryMessageRequest, 2*time.Second)
+			// TODO: Send more including ones on the same date
 
 			if err != nil {
 				panic(err)
 			}
 
-			startTime, err := time.Parse(time.RFC3339, "2020-01-01T10:02:03+04:00")
-			if err != nil {
-				panic(err)
-			}
+			startTime := time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC)
+			start := utils.TimeToProtoTime(startTime)
 
-			start := &timestamp.Timestamp{
-				Seconds: startTime.Unix(),
-			}
-
-			endTime, err := time.Parse(time.RFC3339, "2020-01-30T10:02:03+04:00")
-			if err != nil {
-				panic(err)
-			}
-
-			end := &timestamp.Timestamp{
-				Seconds: endTime.Unix(),
-			}
+			endTime := time.Date(2020, time.January, 1, 30, 2, 03, 04, time.UTC)
+			end := utils.TimeToProtoTime(endTime)
 
 			requestMessage := &insightsMessage.GetVelocityRequest{
 				Payload: &insightsMessage.GetVelocityRequest_Payload{
-					Start: start,
-					End:   end,
+					Start: &start,
+					End:   &end,
 				},
 			}
 			request, err := proto.Marshal(requestMessage)

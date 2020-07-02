@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
 	"github.com/jasonblanchard/di-velocity/src/di_messages/insights"
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
@@ -77,12 +76,11 @@ func main() {
 		}
 
 		normalizedDay := utils.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
+		day := utils.TimeToProtoTime(normalizedDay)
 
 		registerVelocityEventRequest := &insightsMessage.RegisterVelocityEvent{
 			Payload: &insightsMessage.RegisterVelocityEvent_Payload{
-				Day: &timestamp.Timestamp{
-					Seconds: normalizedDay.Unix(),
-				},
+				Day:       &day,
 				CreatorId: entryUpdatedMessage.Payload.CreatorId,
 			},
 		}
@@ -111,7 +109,9 @@ func main() {
 			utils.HandleMessageError(m.Subject, err)
 		}
 
-		err = op.RegisterVelocity(db, time.Unix(requestMessage.Payload.Day.Seconds, 0), requestMessage.Payload.CreatorId)
+		day := time.Unix(requestMessage.Payload.Day.Seconds, 0).UTC()
+
+		err = op.RegisterVelocity(db, day, requestMessage.Payload.CreatorId)
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)
 		}

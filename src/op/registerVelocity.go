@@ -13,7 +13,7 @@ func RegisterVelocity(db *sql.DB, day time.Time, creatorID string) error {
 		return err
 	}
 
-	if (rows.Next()) {
+	if rows.Next() {
 		// get the score
 		// increment
 		// update
