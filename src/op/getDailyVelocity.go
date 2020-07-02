@@ -1,15 +1,30 @@
 package op
 
-import "time"
+import (
+	"database/sql"
+	"time"
 
-// DailyVelocity represents a velocity score on a partiular day
-type DailyVelocity struct {
-	Day   time.Time
-	Score int32
-}
+	"github.com/jasonblanchard/di-velocity/src/domain"
+)
 
 // GetDailyVelocity returns velocity score for each day between start and end (inclusive)
-func GetDailyVelocity(start time.Time, end time.Time) ([]DailyVelocity, error) {
+func GetDailyVelocity(db *sql.DB, start time.Time, end time.Time) (domain.DailyVelocities, error) {
+	// TODO: Include date range
+	rows, err := db.Query("SELECT score, day, creator_id FROM velocities WHERE creator_id = $1", "1")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	return make([]DailyVelocity, 0), nil
+	var velocities = make([]domain.DailyVelocity, 0)
+
+	for rows.Next() {
+		dailyVelocity := domain.DailyVelocity{}
+		if err := rows.Scan(&dailyVelocity.Score, &dailyVelocity.Day, &dailyVelocity.CreatorID); err != nil {
+			return nil, err
+		}
+		velocities = append(velocities, dailyVelocity)
+	}
+
+	return velocities, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"os"
 	"os/signal"
@@ -10,12 +11,15 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/timestamp"
+	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
 	"github.com/jasonblanchard/di-velocity/src/di_messages/insights"
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
 	"github.com/jasonblanchard/di-velocity/src/op"
 	"github.com/jasonblanchard/di-velocity/src/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	_ "github.com/lib/pq"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -37,6 +41,20 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
+	// connStr := "postgres://di:di@localhost:5432/di_velocity?sslmode=disable"
+	connStr := "user=di password=di dbname=di_velocity sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("")
+		os.Exit(1)
+	}
+
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
 	log.Info().Msg(">>> Starting <<<")
 
 	nc, err := nats.Connect(nats.DefaultURL)
@@ -47,6 +65,75 @@ func main() {
 		os.Exit(1)
 	}
 
+	nc.QueueSubscribe("info.entry.updated", natsQueue, func(m *nats.Msg) {
+		log.Info().
+			Str("subject", m.Subject).
+			Msg("received")
+
+		entryUpdatedMessage := &entryMessage.InfoEntryUpdated{}
+		err := proto.Unmarshal(m.Data, entryUpdatedMessage)
+		if err != nil {
+			utils.HandleMessageError(m.Subject, err)
+		}
+
+		normalizedDay := utils.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
+
+		registerVelocityEventRequest := &insightsMessage.RegisterVelocityEvent{
+			Payload: &insightsMessage.RegisterVelocityEvent_Payload{
+				Day: &timestamp.Timestamp{
+					Seconds: normalizedDay.Unix(),
+				},
+				CreatorId: entryUpdatedMessage.Payload.CreatorId,
+			},
+		}
+
+		request, err := proto.Marshal(registerVelocityEventRequest)
+
+		if err != nil {
+			utils.HandleMessageError(m.Subject, err)
+		}
+
+		nc.Publish("insights.register.velocity", request)
+
+		if m.Reply != "" {
+			nc.Publish(m.Reply, []byte(""))
+		}
+	})
+
+	nc.QueueSubscribe("insights.register.velocity", natsQueue, func(m *nats.Msg) {
+		log.Info().
+			Str("subject", m.Subject).
+			Msg("received")
+
+		requestMessage := &insights.RegisterVelocityEvent{}
+		err := proto.Unmarshal(m.Data, requestMessage)
+		if err != nil {
+			utils.HandleMessageError(m.Subject, err)
+		}
+
+		err = op.RegisterVelocity(db, time.Unix(requestMessage.Payload.Day.Seconds, 0), requestMessage.Payload.CreatorId)
+		if err != nil {
+			utils.HandleMessageError(m.Subject, err)
+		}
+	})
+
+	// TODO: Enable in test mode only
+	nc.QueueSubscribe("insights.store.drop", natsQueue, func(m *nats.Msg) {
+		log.Info().
+			Str("subject", m.Subject).
+			Msg("received")
+
+		err := op.DropDailyVelocities(db)
+		if err != nil {
+			utils.HandleMessageError(m.Subject, err)
+		}
+
+		log.Info().
+			Str("subject", m.Subject).
+			Msg("complete")
+		nc.Publish(m.Reply, []byte(""))
+	})
+
 	nc.QueueSubscribe("insights.get.velocity", natsQueue, func(m *nats.Msg) {
 		log.Info().
 			Str("subject", m.Subject).
@@ -54,11 +141,7 @@ func main() {
 		requestMessage := &insightsMessage.GetVelocityRequest{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
-			log.Error().
-				Str("subject", m.Subject).
-				Err(err).
-				Msg("")
-
+			utils.HandleMessageError(m.Subject, err)
 			return
 			// TODO: Respond with error type
 		}
@@ -66,35 +149,19 @@ func main() {
 		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
 		normalizedEnd := utils.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
 
-		dailyVelocities, err := op.GetDailyVelocity(normalizedStart, normalizedEnd)
+		dailyVelocities, err := op.GetDailyVelocity(db, normalizedStart, normalizedEnd)
 		if err != nil {
-			log.Error().
-				Str("subject", m.Subject).
-				Err(err).
-				Msg("")
-		}
-
-		payload := make([]*insights.GetVelocityResponse_DailyVelocity, len(dailyVelocities))
-
-		for i := 0; i < len(dailyVelocities); i++ {
-			payload = append(payload, &insights.GetVelocityResponse_DailyVelocity{
-				Day: &timestamp.Timestamp{
-					Seconds: int64(dailyVelocities[i].Day.Second()),
-				},
-				Score: dailyVelocities[i].Score,
-			})
+			utils.HandleMessageError(m.Subject, err)
+			return
 		}
 
 		responseMessage := &insightsMessage.GetVelocityResponse{
-			Payload: payload,
+			Payload: dailyVelocities.ToDtoPayload(),
 		}
 
 		response, err := proto.Marshal(responseMessage)
 		if err != nil {
-			log.Error().
-				Str("subject", m.Subject).
-				Err(err).
-				Msg("")
+			utils.HandleMessageError(m.Subject, err)
 		}
 
 		nc.Publish(m.Reply, response)
@@ -105,6 +172,7 @@ func main() {
 	go func() {
 		// Wait for signal
 		<-c
+		db.Close()
 		nc.Drain()
 		os.Exit(0)
 	}()

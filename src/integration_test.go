@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
 
 	"github.com/golang/protobuf/proto"
@@ -20,6 +22,34 @@ func TestIntegration(t *testing.T) {
 		}
 
 		Convey("works", func() {
+			nc.Request("insights.store.drop", []byte(""), 3*time.Second)
+
+			updatedAtDate, err := time.Parse(time.RFC3339, "2020-01-01T10:02:03+04:00")
+			if err != nil {
+				panic(err)
+			}
+			updateEntryMessage := &entryMessage.InfoEntryUpdated{
+				Payload: &entryMessage.InfoEntryUpdated_Payload{
+					Id:        "123",
+					Text:      "Some updated entry",
+					CreatorId: "1",
+					UpdatedAt: &timestamp.Timestamp{
+						Seconds: int64(updatedAtDate.Unix()),
+					},
+				},
+			}
+
+			updateEntryMessageRequest, err := proto.Marshal(updateEntryMessage)
+			if err != nil {
+				panic(err)
+			}
+
+			_, err = nc.Request("info.entry.updated", updateEntryMessageRequest, 2*time.Second)
+
+			if err != nil {
+				panic(err)
+			}
+
 			startTime, err := time.Parse(time.RFC3339, "2020-01-01T10:02:03+04:00")
 			if err != nil {
 				panic(err)
@@ -54,7 +84,8 @@ func TestIntegration(t *testing.T) {
 			response := &insightsMessage.GetVelocityResponse{}
 			err = proto.Unmarshal(responseMessage.Data, response)
 			So(err, ShouldBeNil)
-			So(len(response.Payload), ShouldEqual, 0)
+			fmt.Println(response.Payload)
+			So(response.Payload[0].Score, ShouldEqual, 1)
 		})
 	})
 }
