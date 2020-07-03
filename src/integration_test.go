@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -14,6 +13,27 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func updateEntry(nc *nats.Conn, date time.Time) error {
+	uptdateAt := utils.TimeToProtoTime(date)
+
+	updateEntryMessage := &entryMessage.InfoEntryUpdated{
+		Payload: &entryMessage.InfoEntryUpdated_Payload{
+			Id:        "123",
+			Text:      "Some updated entry",
+			CreatorId: "1",
+			UpdatedAt: &uptdateAt,
+		},
+	}
+
+	updateEntryMessageRequest, err := proto.Marshal(updateEntryMessage)
+	if err != nil {
+		return err
+	}
+
+	_, err = nc.Request("info.entry.updated", updateEntryMessageRequest, 2*time.Second)
+	return err
+}
+
 func TestIntegration(t *testing.T) {
 	Convey("The system", t, func() {
 		nc, err := nats.Connect(nats.DefaultURL)
@@ -24,25 +44,12 @@ func TestIntegration(t *testing.T) {
 		Convey("works", func() {
 			nc.Request("insights.store.drop", []byte(""), 3*time.Second)
 
-			updatedAtDate := time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC)
-			uptdateAt := utils.TimeToProtoTime(updatedAtDate)
+			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
 
-			updateEntryMessage := &entryMessage.InfoEntryUpdated{
-				Payload: &entryMessage.InfoEntryUpdated_Payload{
-					Id:        "123",
-					Text:      "Some updated entry",
-					CreatorId: "1",
-					UpdatedAt: &uptdateAt,
-				},
-			}
-
-			updateEntryMessageRequest, err := proto.Marshal(updateEntryMessage)
-			if err != nil {
-				panic(err)
-			}
-
-			_, err = nc.Request("info.entry.updated", updateEntryMessageRequest, 2*time.Second)
-			// TODO: Send more including ones on the same date
+			// Let everything resolve
+			time.Sleep(2 * time.Second)
 
 			if err != nil {
 				panic(err)
@@ -70,8 +77,11 @@ func TestIntegration(t *testing.T) {
 			response := &insightsMessage.GetVelocityResponse{}
 			err = proto.Unmarshal(responseMessage.Data, response)
 			So(err, ShouldBeNil)
-			fmt.Println(response.Payload)
-			So(response.Payload[0].Score, ShouldEqual, 1)
+			So(len(response.Payload), ShouldEqual, 2)
+			So(response.Payload[0].Day.Seconds, ShouldEqual, 1577836800)
+			So(response.Payload[0].Score, ShouldEqual, 2)
+			So(response.Payload[1].Score, ShouldEqual, 1)
+			So(response.Payload[1].Day.Seconds, ShouldEqual, 1577923200)
 		})
 	})
 }
