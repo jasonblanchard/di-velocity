@@ -11,8 +11,13 @@ import (
 
 // GetDailyVelocity returns velocity score for each day between start and end (inclusive)
 func GetDailyVelocity(db *sql.DB, start time.Time, end time.Time) (domain.DailyVelocities, error) {
-	// TODO: Include date range
-	rows, err := db.Query("SELECT count, day, creator_id FROM daily_counts WHERE creator_id = $1", "1")
+	rows, err := db.Query(`
+SELECT count, day, creator_id
+FROM daily_counts
+WHERE creator_id = $1
+AND day >= $2
+AND day <= $3
+`, "1", start, end)
 	if err != nil {
 		return nil, err
 	}

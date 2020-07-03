@@ -47,6 +47,8 @@ func TestIntegration(t *testing.T) {
 			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
 			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
 			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2019, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2021, time.January, 2, 12, 2, 03, 04, time.UTC))
 
 			// Let everything resolve
 			time.Sleep(2 * time.Second)
