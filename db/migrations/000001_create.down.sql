@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS velocities;
+DROP TABLE IF EXISTS daily_counts;

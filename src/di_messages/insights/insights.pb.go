@@ -283,17 +283,17 @@ func (x *RequestContext) GetPrincipal() *Principal {
 	return nil
 }
 
-type RegisterVelocityEvent struct {
+type IncrementDailyCounter struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Context *RequestContext                `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
-	Payload *RegisterVelocityEvent_Payload `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
+	Payload *IncrementDailyCounter_Payload `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 }
 
-func (x *RegisterVelocityEvent) Reset() {
-	*x = RegisterVelocityEvent{}
+func (x *IncrementDailyCounter) Reset() {
+	*x = IncrementDailyCounter{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_insights_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -301,13 +301,13 @@ func (x *RegisterVelocityEvent) Reset() {
 	}
 }
 
-func (x *RegisterVelocityEvent) String() string {
+func (x *IncrementDailyCounter) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RegisterVelocityEvent) ProtoMessage() {}
+func (*IncrementDailyCounter) ProtoMessage() {}
 
-func (x *RegisterVelocityEvent) ProtoReflect() protoreflect.Message {
+func (x *IncrementDailyCounter) ProtoReflect() protoreflect.Message {
 	mi := &file_insights_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -319,19 +319,19 @@ func (x *RegisterVelocityEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RegisterVelocityEvent.ProtoReflect.Descriptor instead.
-func (*RegisterVelocityEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use IncrementDailyCounter.ProtoReflect.Descriptor instead.
+func (*IncrementDailyCounter) Descriptor() ([]byte, []int) {
 	return file_insights_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *RegisterVelocityEvent) GetContext() *RequestContext {
+func (x *IncrementDailyCounter) GetContext() *RequestContext {
 	if x != nil {
 		return x.Context
 	}
 	return nil
 }
 
-func (x *RegisterVelocityEvent) GetPayload() *RegisterVelocityEvent_Payload {
+func (x *IncrementDailyCounter) GetPayload() *IncrementDailyCounter_Payload {
 	if x != nil {
 		return x.Payload
 	}
@@ -448,7 +448,7 @@ func (x *GetVelocityResponse) GetError() *Error {
 	return nil
 }
 
-type RegisterVelocityEvent_Payload struct {
+type IncrementDailyCounter_Payload struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -457,8 +457,8 @@ type RegisterVelocityEvent_Payload struct {
 	CreatorId string               `protobuf:"bytes,2,opt,name=creator_id,json=creatorId,proto3" json:"creator_id,omitempty"`
 }
 
-func (x *RegisterVelocityEvent_Payload) Reset() {
-	*x = RegisterVelocityEvent_Payload{}
+func (x *IncrementDailyCounter_Payload) Reset() {
+	*x = IncrementDailyCounter_Payload{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_insights_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -466,13 +466,13 @@ func (x *RegisterVelocityEvent_Payload) Reset() {
 	}
 }
 
-func (x *RegisterVelocityEvent_Payload) String() string {
+func (x *IncrementDailyCounter_Payload) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RegisterVelocityEvent_Payload) ProtoMessage() {}
+func (*IncrementDailyCounter_Payload) ProtoMessage() {}
 
-func (x *RegisterVelocityEvent_Payload) ProtoReflect() protoreflect.Message {
+func (x *IncrementDailyCounter_Payload) ProtoReflect() protoreflect.Message {
 	mi := &file_insights_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -484,19 +484,19 @@ func (x *RegisterVelocityEvent_Payload) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RegisterVelocityEvent_Payload.ProtoReflect.Descriptor instead.
-func (*RegisterVelocityEvent_Payload) Descriptor() ([]byte, []int) {
+// Deprecated: Use IncrementDailyCounter_Payload.ProtoReflect.Descriptor instead.
+func (*IncrementDailyCounter_Payload) Descriptor() ([]byte, []int) {
 	return file_insights_proto_rawDescGZIP(), []int{3, 0}
 }
 
-func (x *RegisterVelocityEvent_Payload) GetDay() *timestamp.Timestamp {
+func (x *IncrementDailyCounter_Payload) GetDay() *timestamp.Timestamp {
 	if x != nil {
 		return x.Day
 	}
 	return nil
 }
 
-func (x *RegisterVelocityEvent_Payload) GetCreatorId() string {
+func (x *IncrementDailyCounter_Payload) GetCreatorId() string {
 	if x != nil {
 		return x.CreatorId
 	}
@@ -650,16 +650,16 @@ var file_insights_proto_rawDesc = []byte{
 	0x6e, 0x63, 0x69, 0x70, 0x61, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x6d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x2e, 0x69, 0x6e, 0x73, 0x69, 0x67, 0x68, 0x74, 0x73,
 	0x2e, 0x50, 0x72, 0x69, 0x6e, 0x63, 0x69, 0x70, 0x61, 0x6c, 0x52, 0x09, 0x70, 0x72, 0x69, 0x6e,
-	0x63, 0x69, 0x70, 0x61, 0x6c, 0x22, 0xf8, 0x01, 0x0a, 0x15, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x56, 0x65, 0x6c, 0x6f, 0x63, 0x69, 0x74, 0x79, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12,
+	0x63, 0x69, 0x70, 0x61, 0x6c, 0x22, 0xf8, 0x01, 0x0a, 0x15, 0x49, 0x6e, 0x63, 0x72, 0x65, 0x6d,
+	0x65, 0x6e, 0x74, 0x44, 0x61, 0x69, 0x6c, 0x79, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x65, 0x72, 0x12,
 	0x3b, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x21, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x2e, 0x69, 0x6e, 0x73, 0x69,
 	0x67, 0x68, 0x74, 0x73, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x6f, 0x6e, 0x74,
 	0x65, 0x78, 0x74, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x12, 0x4a, 0x0a, 0x07,
 	0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e,
 	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x2e, 0x69, 0x6e, 0x73, 0x69, 0x67, 0x68, 0x74,
-	0x73, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x56, 0x65, 0x6c, 0x6f, 0x63, 0x69,
-	0x74, 0x79, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x2e, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x52,
+	0x73, 0x2e, 0x49, 0x6e, 0x63, 0x72, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x69, 0x6c, 0x79,
+	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x65, 0x72, 0x2e, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x52,
 	0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x1a, 0x56, 0x0a, 0x07, 0x50, 0x61, 0x79, 0x6c,
 	0x6f, 0x61, 0x64, 0x12, 0x2c, 0x0a, 0x03, 0x64, 0x61, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
@@ -724,10 +724,10 @@ var file_insights_proto_goTypes = []interface{}{
 	(*Error)(nil),                             // 2: messages.insights.Error
 	(*Principal)(nil),                         // 3: messages.insights.Principal
 	(*RequestContext)(nil),                    // 4: messages.insights.RequestContext
-	(*RegisterVelocityEvent)(nil),             // 5: messages.insights.RegisterVelocityEvent
+	(*IncrementDailyCounter)(nil),             // 5: messages.insights.IncrementDailyCounter
 	(*GetVelocityRequest)(nil),                // 6: messages.insights.GetVelocityRequest
 	(*GetVelocityResponse)(nil),               // 7: messages.insights.GetVelocityResponse
-	(*RegisterVelocityEvent_Payload)(nil),     // 8: messages.insights.RegisterVelocityEvent.Payload
+	(*IncrementDailyCounter_Payload)(nil),     // 8: messages.insights.IncrementDailyCounter.Payload
 	(*GetVelocityRequest_Payload)(nil),        // 9: messages.insights.GetVelocityRequest.Payload
 	(*GetVelocityResponse_DailyVelocity)(nil), // 10: messages.insights.GetVelocityResponse.DailyVelocity
 	(*timestamp.Timestamp)(nil),               // 11: google.protobuf.Timestamp
@@ -736,13 +736,13 @@ var file_insights_proto_depIdxs = []int32{
 	0,  // 0: messages.insights.Error.code:type_name -> messages.insights.Error.Code
 	1,  // 1: messages.insights.Principal.type:type_name -> messages.insights.Principal.Type
 	3,  // 2: messages.insights.RequestContext.principal:type_name -> messages.insights.Principal
-	4,  // 3: messages.insights.RegisterVelocityEvent.context:type_name -> messages.insights.RequestContext
-	8,  // 4: messages.insights.RegisterVelocityEvent.payload:type_name -> messages.insights.RegisterVelocityEvent.Payload
+	4,  // 3: messages.insights.IncrementDailyCounter.context:type_name -> messages.insights.RequestContext
+	8,  // 4: messages.insights.IncrementDailyCounter.payload:type_name -> messages.insights.IncrementDailyCounter.Payload
 	4,  // 5: messages.insights.GetVelocityRequest.context:type_name -> messages.insights.RequestContext
 	9,  // 6: messages.insights.GetVelocityRequest.payload:type_name -> messages.insights.GetVelocityRequest.Payload
 	10, // 7: messages.insights.GetVelocityResponse.payload:type_name -> messages.insights.GetVelocityResponse.DailyVelocity
 	2,  // 8: messages.insights.GetVelocityResponse.error:type_name -> messages.insights.Error
-	11, // 9: messages.insights.RegisterVelocityEvent.Payload.day:type_name -> google.protobuf.Timestamp
+	11, // 9: messages.insights.IncrementDailyCounter.Payload.day:type_name -> google.protobuf.Timestamp
 	11, // 10: messages.insights.GetVelocityRequest.Payload.start:type_name -> google.protobuf.Timestamp
 	11, // 11: messages.insights.GetVelocityRequest.Payload.end:type_name -> google.protobuf.Timestamp
 	11, // 12: messages.insights.GetVelocityResponse.DailyVelocity.day:type_name -> google.protobuf.Timestamp
@@ -796,7 +796,7 @@ func file_insights_proto_init() {
 			}
 		}
 		file_insights_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisterVelocityEvent); i {
+			switch v := v.(*IncrementDailyCounter); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -832,7 +832,7 @@ func file_insights_proto_init() {
 			}
 		}
 		file_insights_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisterVelocityEvent_Payload); i {
+			switch v := v.(*IncrementDailyCounter_Payload); i {
 			case 0:
 				return &v.state
 			case 1:

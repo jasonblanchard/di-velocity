@@ -78,32 +78,32 @@ func main() {
 		normalizedDay := utils.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
 		day := utils.TimeToProtoTime(normalizedDay)
 
-		registerVelocityEventRequest := &insightsMessage.RegisterVelocityEvent{
-			Payload: &insightsMessage.RegisterVelocityEvent_Payload{
+		incrementDailyCounterRequest := &insightsMessage.IncrementDailyCounter{
+			Payload: &insightsMessage.IncrementDailyCounter_Payload{
 				Day:       &day,
 				CreatorId: entryUpdatedMessage.Payload.CreatorId,
 			},
 		}
 
-		request, err := proto.Marshal(registerVelocityEventRequest)
+		request, err := proto.Marshal(incrementDailyCounterRequest)
 
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)
 		}
 
-		nc.Publish("insights.register.velocity", request)
+		nc.Publish("insights.increment.dailyCounter", request)
 
 		if m.Reply != "" {
 			nc.Publish(m.Reply, []byte(""))
 		}
 	})
 
-	nc.QueueSubscribe("insights.register.velocity", natsQueue, func(m *nats.Msg) {
+	nc.QueueSubscribe("insights.increment.dailyCounter", natsQueue, func(m *nats.Msg) {
 		log.Info().
 			Str("subject", m.Subject).
 			Msg("received")
 
-		requestMessage := &insights.RegisterVelocityEvent{}
+		requestMessage := &insights.IncrementDailyCounter{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)
@@ -111,7 +111,7 @@ func main() {
 
 		day := time.Unix(requestMessage.Payload.Day.Seconds, 0).UTC()
 
-		err = op.RegisterVelocity(db, day, requestMessage.Payload.CreatorId)
+		err = op.IncrementDailyCounter(db, day, requestMessage.Payload.CreatorId)
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)
 		}
@@ -123,7 +123,7 @@ func main() {
 			Str("subject", m.Subject).
 			Msg("received")
 
-		err := op.DropDailyVelocities(db)
+		err := op.DropDailyCounts(db)
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)
 		}
@@ -149,6 +149,7 @@ func main() {
 		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
 		normalizedEnd := utils.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
 
+		// TODO: Don't just get state from DB, compute the translation
 		dailyVelocities, err := op.GetDailyVelocity(db, normalizedStart, normalizedEnd)
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)

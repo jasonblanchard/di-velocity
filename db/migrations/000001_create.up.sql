@@ -1,8 +1,8 @@
-CREATE TABLE IF NOT EXISTS velocities(
+CREATE TABLE IF NOT EXISTS daily_counts(
   id serial PRIMARY KEY,
   day TIMESTAMP,
-  score integer,
+  count integer,
   creator_id VARCHAR(64)
 );
 
-CREATE INDEX creator_idx ON velocities (creator_id);
+CREATE INDEX creator_idx ON daily_counts (creator_id);
