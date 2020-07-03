@@ -136,22 +136,23 @@ func main() {
 		}
 	})
 
-	// TODO: Enable in test mode only
-	nc.QueueSubscribe("insights.store.drop", natsQueue, func(m *nats.Msg) {
-		log.Info().
-			Str("subject", m.Subject).
-			Msg("received")
+	if viper.GetBool("test_mode") == true {
+		nc.QueueSubscribe("insights.store.drop", natsQueue, func(m *nats.Msg) {
+			log.Info().
+				Str("subject", m.Subject).
+				Msg("received")
 
-		err := op.DropDailyCounts(db)
-		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
-		}
+			err := op.DropDailyCounts(db)
+			if err != nil {
+				utils.HandleMessageError(m.Subject, err)
+			}
 
-		log.Info().
-			Str("subject", m.Subject).
-			Msg("complete")
-		nc.Publish(m.Reply, []byte(""))
-	})
+			log.Info().
+				Str("subject", m.Subject).
+				Msg("complete")
+			nc.Publish(m.Reply, []byte(""))
+		})
+	}
 
 	nc.QueueSubscribe("insights.get.velocity", natsQueue, func(m *nats.Msg) {
 		log.Info().
