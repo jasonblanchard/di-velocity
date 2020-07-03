@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime"
@@ -17,6 +18,7 @@ import (
 	"github.com/jasonblanchard/di-velocity/src/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"
 
@@ -25,23 +27,36 @@ import (
 
 var natsQueue = "valocity"
 
-func main() {
-	pretty := flag.Bool("pretty", false, "Pretty print logs")
-	debugLoglevel := flag.Bool("debug", false, "sets log level to debug")
+func initConfig(path string) {
+	if path != "" {
+		viper.SetConfigFile(path)
+	}
+	viper.AutomaticEnv()
+	err := viper.ReadInConfig()
 
+	if err != nil {
+		log.Error().Err(err).Msg("")
+		return
+	}
+	fmt.Println("Using config file:", viper.ConfigFileUsed())
+}
+
+func main() {
+	config := flag.String("config", "", "Path to config file")
 	flag.Parse()
 
-	if *pretty == true {
+	initConfig(*config)
+
+	if viper.GetBool("pretty") == true {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if *debugLoglevel {
+	if viper.GetBool("debug") {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	// connStr := "postgres://di:di@localhost:5432/di_velocity?sslmode=disable"
-	connStr := "user=di password=di dbname=di_velocity sslmode=disable"
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", viper.GetString("db_user"), viper.GetString("db_password"), viper.GetString("db_name"))
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal().
