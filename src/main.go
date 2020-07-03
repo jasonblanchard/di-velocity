@@ -27,7 +27,7 @@ import (
 
 var natsQueue = "valocity"
 
-func initConfig(path string) {
+func initConfig(path string) string {
 	if path != "" {
 		viper.SetConfigFile(path)
 	}
@@ -35,17 +35,17 @@ func initConfig(path string) {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		log.Error().Err(err).Msg("")
-		return
+		log.Info().Msg(err.Error())
+		return ""
 	}
-	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	return viper.ConfigFileUsed()
 }
 
 func main() {
 	config := flag.String("config", "", "Path to config file")
 	flag.Parse()
 
-	initConfig(*config)
+	configFile := initConfig(*config)
 
 	if viper.GetBool("pretty") == true {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -54,6 +54,10 @@ func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if viper.GetBool("debug") {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	if configFile != "" {
+		log.Info().Msg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 	}
 
 	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", viper.GetString("db_user"), viper.GetString("db_password"), viper.GetString("db_name"))
