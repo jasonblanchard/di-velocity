@@ -46,7 +46,14 @@ func TestIntegration(t *testing.T) {
 
 			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
 			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
+
 			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+			updateEntry(nc, time.Date(2020, time.January, 2, 12, 2, 03, 04, time.UTC))
+
 			updateEntry(nc, time.Date(2019, time.January, 2, 12, 2, 03, 04, time.UTC))
 			updateEntry(nc, time.Date(2021, time.January, 2, 12, 2, 03, 04, time.UTC))
 
@@ -81,9 +88,9 @@ func TestIntegration(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(len(response.Payload), ShouldEqual, 2)
 			So(response.Payload[0].Day.Seconds, ShouldEqual, 1577836800)
-			So(response.Payload[0].Score, ShouldEqual, 2)
-			So(response.Payload[1].Score, ShouldEqual, 1)
+			So(response.Payload[0].Score, ShouldEqual, 1)
 			So(response.Payload[1].Day.Seconds, ShouldEqual, 1577923200)
+			So(response.Payload[1].Score, ShouldEqual, 2)
 		})
 	})
 }

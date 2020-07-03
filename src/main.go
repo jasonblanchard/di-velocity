@@ -149,12 +149,13 @@ func main() {
 		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
 		normalizedEnd := utils.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
 
-		// TODO: Don't just get state from DB, compute the translation
-		dailyVelocities, err := op.GetDailyVelocity(db, normalizedStart, normalizedEnd)
+		dailyCounts, err := op.GetDailyCounts(db, normalizedStart, normalizedEnd)
 		if err != nil {
 			utils.HandleMessageError(m.Subject, err)
 			return
 		}
+
+		dailyVelocities := dailyCounts.ToVelocities()
 
 		responseMessage := &insightsMessage.GetVelocityResponse{
 			Payload: dailyVelocities.ToDtoPayload(),
