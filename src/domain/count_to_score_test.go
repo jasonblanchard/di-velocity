@@ -7,8 +7,8 @@ import (
 
 func TestCountToScore(t *testing.T) {
 	tests := []struct {
-		in  int
-		out int
+		in  int32
+		out int32
 	}{
 		{0, 0},
 		{1, 1},

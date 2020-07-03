@@ -14,14 +14,14 @@ type DailyCount struct {
 // DailyCounts collection of DailyCount entities
 type DailyCounts []DailyCount
 
-// ToVelocities calculate velocity scores by daily counts
-func (counts DailyCounts) ToVelocities() DailyVelocities {
+// ToVelocityScores calculate velocity scores by daily counts
+func (counts DailyCounts) ToVelocityScores() DailyVelocities {
 	dailyVelocities := DailyVelocities{}
 
 	for i := 0; i < len(counts); i++ {
 		dailyVelocity := DailyVelocity{
 			Day:   counts[i].Day,
-			Score: CountToScore(counts[i].Count),
+			Score: CountToScore(counts[i].Count), // TODO: Convert to score
 		}
 		dailyVelocities = append(dailyVelocities, dailyVelocity)
 	}

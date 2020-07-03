@@ -155,7 +155,7 @@ func main() {
 			return
 		}
 
-		dailyVelocities := dailyCounts.ToVelocities()
+		dailyVelocities := dailyCounts.ToVelocityScores()
 
 		responseMessage := &insightsMessage.GetVelocityResponse{
 			Payload: dailyVelocities.ToDtoPayload(),
