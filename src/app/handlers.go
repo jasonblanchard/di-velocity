@@ -15,28 +15,28 @@ import (
 // Handlers configures all the handlers
 func (service *Service) Handlers() {
 	if service.TestMode == true {
-		service.Broker.QueueSubscribe("insights.store.drop", service.BrokerQueueName, service.WithLogger(service.HandleDrop()))
+		service.RegisterHandler("insights.store.drop", service.WithResponse(service.HandleDrop()))
 	}
-	service.Broker.QueueSubscribe("info.entry.updated", service.BrokerQueueName, service.WithLogger(service.HandleEntryUpdated()))
-	service.Broker.QueueSubscribe("insights.increment.dailyCounter", service.BrokerQueueName, service.WithLogger(service.HandleIncrementDailyCounter()))
-	service.Broker.QueueSubscribe("insights.get.velocity", service.BrokerQueueName, service.WithLogger(service.handleGetVelocity()))
+	service.RegisterHandler("info.entry.updated", service.HandleEntryUpdated())
+	service.RegisterHandler("insights.increment.dailyCounter", service.HandleIncrementDailyCounter())
+	service.RegisterHandler("insights.get.velocity", service.WithResponse(service.handleGetVelocity()))
 }
 
 // HandleDrop handles drop
-func (service *Service) HandleDrop() nats.MsgHandler {
-	return func(m *nats.Msg) {
+func (service *Service) HandleDrop() MsgHandler {
+	return func(m *nats.Msg) ([]byte, error) {
 		err := op.DropDailyCounts(service.Store)
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
+			return nil, err
 		}
 
-		service.Broker.Publish(m.Reply, []byte(""))
+		return []byte(""), nil
 	}
 }
 
 // HandleEntryUpdated handles entry updated
-func (service *Service) HandleEntryUpdated() nats.MsgHandler {
-	return func(m *nats.Msg) {
+func (service *Service) HandleEntryUpdated() MsgHandler {
+	return func(m *nats.Msg) ([]byte, error) {
 		entryUpdatedMessage := &entryMessage.InfoEntryUpdated{}
 		err := proto.Unmarshal(m.Data, entryUpdatedMessage)
 		if err != nil {
@@ -56,44 +56,43 @@ func (service *Service) HandleEntryUpdated() nats.MsgHandler {
 		request, err := proto.Marshal(incrementDailyCounterRequest)
 
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
+			return nil, err
 		}
 
 		service.Broker.Publish("insights.increment.dailyCounter", request)
 
-		if m.Reply != "" {
-			service.Broker.Publish(m.Reply, []byte(""))
-		}
+		return nil, nil
 	}
 }
 
 // HandleIncrementDailyCounter handles incrementing counter for a day
-func (service *Service) HandleIncrementDailyCounter() nats.MsgHandler {
-	return func(m *nats.Msg) {
+func (service *Service) HandleIncrementDailyCounter() MsgHandler {
+	return func(m *nats.Msg) ([]byte, error) {
 		requestMessage := &insights.IncrementDailyCounter{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
+			return nil, err
 		}
 
 		day := time.Unix(requestMessage.Payload.Day.Seconds, 0).UTC()
 
 		err = op.IncrementDailyCounter(service.Store, day, requestMessage.Payload.CreatorId)
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
+			return nil, err
 		}
+
+		return nil, nil
 	}
 }
 
 // handleGetVelocity handles getting velocity scores
-func (service *Service) handleGetVelocity() nats.MsgHandler {
-	return func(m *nats.Msg) {
+func (service *Service) handleGetVelocity() MsgHandler {
+	return func(m *nats.Msg) ([]byte, error) {
 		requestMessage := &insightsMessage.GetVelocityRequest{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
-			return
 			// TODO: Respond with error type
+			return nil, err
 		}
 
 		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
@@ -101,8 +100,7 @@ func (service *Service) handleGetVelocity() nats.MsgHandler {
 
 		dailyCounts, err := op.GetDailyCounts(service.Store, normalizedStart, normalizedEnd)
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
-			return
+			return nil, err
 		}
 
 		dailyVelocities := dailyCounts.ToVelocityScores()
@@ -111,11 +109,6 @@ func (service *Service) handleGetVelocity() nats.MsgHandler {
 			Payload: dailyVelocities.ToDtoPayload(),
 		}
 
-		response, err := proto.Marshal(responseMessage)
-		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
-		}
-
-		service.Broker.Publish(m.Reply, response)
+		return proto.Marshal(responseMessage)
 	}
 }

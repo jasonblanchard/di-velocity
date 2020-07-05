@@ -30,7 +30,7 @@ func updateEntry(nc *nats.Conn, date time.Time) error {
 		return err
 	}
 
-	_, err = nc.Request("info.entry.updated", updateEntryMessageRequest, 2*time.Second)
+	err = nc.Publish("info.entry.updated", updateEntryMessageRequest)
 	return err
 }
 

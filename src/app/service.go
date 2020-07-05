@@ -71,3 +71,20 @@ func NewService(input *ServiceInput) (Service, error) {
 
 	return service, nil
 }
+
+// MsgHandler message handler. Meant to be chained with middleware
+type MsgHandler func(*nats.Msg) ([]byte, error)
+
+// WrapHandlerChain takes message handlers and makes them compatible with Nats
+func (service *Service) WrapHandlerChain(handler MsgHandler) nats.MsgHandler {
+	return func(m *nats.Msg) {
+		handler(m)
+	}
+}
+
+// RegisterHandler wraps handler in default middleware and listens on Nats queue
+func (service *Service) RegisterHandler(topic string, handler MsgHandler) {
+	// TODO: Make default middleware configurable and map over them
+	wrappedHandler := service.WrapHandlerChain(service.WithLogger(handler))
+	service.Broker.QueueSubscribe(topic, service.BrokerQueueName, wrappedHandler)
+}
