@@ -15,7 +15,6 @@ func (service *Service) WithLogger(handler MsgHandler) MsgHandler {
 
 		start := time.Now()
 
-		// TODO: Check for error?
 		value, err := handler(m)
 
 		end := time.Now()

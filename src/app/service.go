@@ -64,19 +64,17 @@ func NewService(input *ServiceInput) (Service, error) {
 	if input.Debug == true {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
-
 	zerolog.DurationFieldUnit = time.Second
-
 	service.Logger = &logger
 
 	return service, nil
 }
 
-// MsgHandler message handler. Meant to be chained with middleware
+// MsgHandler message handler function. Meant to be chained with middleware.
 type MsgHandler func(*nats.Msg) ([]byte, error)
 
-// WrapHandlerChain takes message handlers and makes them compatible with Nats
-func (service *Service) WrapHandlerChain(handler MsgHandler) nats.MsgHandler {
+// MessageHandlerChainToNatsHandler takes message handler and makes it compatible with Nats
+func (service *Service) MessageHandlerChainToNatsHandler(handler MsgHandler) nats.MsgHandler {
 	return func(m *nats.Msg) {
 		handler(m)
 	}
@@ -85,6 +83,6 @@ func (service *Service) WrapHandlerChain(handler MsgHandler) nats.MsgHandler {
 // RegisterHandler wraps handler in default middleware and listens on Nats queue
 func (service *Service) RegisterHandler(topic string, handler MsgHandler) {
 	// TODO: Make default middleware configurable and map over them
-	wrappedHandler := service.WrapHandlerChain(service.WithLogger(handler))
+	wrappedHandler := service.MessageHandlerChainToNatsHandler(service.WithLogger(handler))
 	service.Broker.QueueSubscribe(topic, service.BrokerQueueName, wrappedHandler)
 }
