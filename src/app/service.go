@@ -82,7 +82,8 @@ func (service *Service) MessageHandlerChainToNatsHandler(handler MsgHandler) nat
 
 // RegisterHandler wraps handler in default middleware and listens on Nats queue
 func (service *Service) RegisterHandler(topic string, handler MsgHandler) {
-	// TODO: Make default middleware configurable and map over them
-	wrappedHandler := service.MessageHandlerChainToNatsHandler(service.WithLogger(handler))
+	// TODO: Make default middleware configurable and map over them to create this root handler
+	_, handler = service.WithLogger(topic, handler)
+	wrappedHandler := service.MessageHandlerChainToNatsHandler(handler)
 	service.Broker.QueueSubscribe(topic, service.BrokerQueueName, wrappedHandler)
 }

@@ -15,16 +15,16 @@ import (
 // Handlers configures all the handlers
 func (service *Service) Handlers() {
 	if service.TestMode == true {
-		service.RegisterHandler("insights.store.drop", service.WithResponse(service.HandleDrop()))
+		service.RegisterHandler(service.WithResponse(service.HandleDrop()))
 	}
-	service.RegisterHandler("info.entry.updated", service.HandleEntryUpdated())
-	service.RegisterHandler("insights.increment.dailyCounter", service.HandleIncrementDailyCounter())
-	service.RegisterHandler("insights.get.velocity", service.WithResponse(service.handleGetVelocity()))
+	service.RegisterHandler(service.HandleEntryUpdated())
+	service.RegisterHandler(service.HandleIncrementDailyCounter())
+	service.RegisterHandler(service.WithResponse(service.handleGetVelocity()))
 }
 
-// HandleDrop handles drop
-func (service *Service) HandleDrop() MsgHandler {
-	return func(m *nats.Msg) ([]byte, error) {
+// HandleDrop insights.store.drop
+func (service *Service) HandleDrop() (string, MsgHandler) {
+	return "insights.store.drop", func(m *nats.Msg) ([]byte, error) {
 		err := op.DropDailyCounts(service.Store)
 		if err != nil {
 			return nil, err
@@ -34,9 +34,9 @@ func (service *Service) HandleDrop() MsgHandler {
 	}
 }
 
-// HandleEntryUpdated handles entry updated
-func (service *Service) HandleEntryUpdated() MsgHandler {
-	return func(m *nats.Msg) ([]byte, error) {
+// HandleEntryUpdated info.entry.updated
+func (service *Service) HandleEntryUpdated() (string, MsgHandler) {
+	return "info.entry.updated", func(m *nats.Msg) ([]byte, error) {
 		entryUpdatedMessage := &entryMessage.InfoEntryUpdated{}
 		err := proto.Unmarshal(m.Data, entryUpdatedMessage)
 		if err != nil {
@@ -65,9 +65,9 @@ func (service *Service) HandleEntryUpdated() MsgHandler {
 	}
 }
 
-// HandleIncrementDailyCounter handles incrementing counter for a day
-func (service *Service) HandleIncrementDailyCounter() MsgHandler {
-	return func(m *nats.Msg) ([]byte, error) {
+// HandleIncrementDailyCounter insights.increment.dailyCounter
+func (service *Service) HandleIncrementDailyCounter() (string, MsgHandler) {
+	return "insights.increment.dailyCounter", func(m *nats.Msg) ([]byte, error) {
 		requestMessage := &insights.IncrementDailyCounter{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
@@ -85,9 +85,9 @@ func (service *Service) HandleIncrementDailyCounter() MsgHandler {
 	}
 }
 
-// handleGetVelocity handles getting velocity scores
-func (service *Service) handleGetVelocity() MsgHandler {
-	return func(m *nats.Msg) ([]byte, error) {
+// handleGetVelocity insights.get.velocity
+func (service *Service) handleGetVelocity() (string, MsgHandler) {
+	return "insights.get.velocity", func(m *nats.Msg) ([]byte, error) {
 		requestMessage := &insightsMessage.GetVelocityRequest{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
