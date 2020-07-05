@@ -81,7 +81,10 @@ func TestIntegration(t *testing.T) {
 				panic(err)
 			}
 
-			responseMessage, err := nc.Request("insights.get.velocity", request, 5*time.Second)
+			responseMessage, err := nc.Request("insights.get.velocity", request, 3*time.Second)
+			if err != nil {
+				panic(err)
+			}
 
 			response := &insightsMessage.GetVelocityResponse{}
 			err = proto.Unmarshal(responseMessage.Data, response)

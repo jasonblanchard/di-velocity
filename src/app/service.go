@@ -65,6 +65,8 @@ func NewService(input *ServiceInput) (Service, error) {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
+	zerolog.DurationFieldUnit = time.Second
+
 	service.Logger = &logger
 
 	return service, nil
