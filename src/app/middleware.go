@@ -29,8 +29,9 @@ func (service *Service) WithLogger(topic string, handler MsgHandler) (string, Ms
 
 		service.Logger.Info().
 			Str("subject", m.Subject).
-			Dur("Latency", latency).
-			Msg("complete")
+			Dur("latencyMS", latency).
+			Str("replyChan", m.Reply).
+			Msg("processed")
 
 		return value, err
 	}
