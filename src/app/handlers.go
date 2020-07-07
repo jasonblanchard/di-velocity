@@ -9,6 +9,7 @@ import (
 	"github.com/jasonblanchard/di-velocity/src/op"
 	"github.com/jasonblanchard/di-velocity/src/utils"
 	"github.com/nats-io/nats.go"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -27,7 +28,7 @@ func (service *Service) HandleDrop() (string, MsgHandler) {
 	return "insights.store.drop", func(m *nats.Msg) ([]byte, error) {
 		err := op.DropDailyCounts(service.Store)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "DropDailyCounts failed")
 		}
 
 		return []byte(""), nil
@@ -40,7 +41,7 @@ func (service *Service) HandleEntryUpdated() (string, MsgHandler) {
 		entryUpdatedMessage := &entryMessage.InfoEntryUpdated{}
 		err := proto.Unmarshal(m.Data, entryUpdatedMessage)
 		if err != nil {
-			utils.HandleMessageError(m.Subject, err)
+			return nil, errors.Wrap(err, "Unmarshall failed")
 		}
 
 		normalizedDay := utils.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
@@ -56,7 +57,7 @@ func (service *Service) HandleEntryUpdated() (string, MsgHandler) {
 		request, err := proto.Marshal(incrementDailyCounterRequest)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Marshal failed")
 		}
 
 		service.Broker.Publish("insights.increment.dailyCounter", request)
@@ -71,14 +72,14 @@ func (service *Service) HandleIncrementDailyCounter() (string, MsgHandler) {
 		requestMessage := &insights.IncrementDailyCounter{}
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "unmarshall failed")
 		}
 
 		day := time.Unix(requestMessage.Payload.Day.Seconds, 0).UTC()
 
 		err = op.IncrementDailyCounter(service.Store, day, requestMessage.Payload.CreatorId)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "increment failed")
 		}
 
 		return nil, nil
@@ -92,7 +93,7 @@ func (service *Service) handleGetVelocity() (string, MsgHandler) {
 		err := proto.Unmarshal(m.Data, requestMessage)
 		if err != nil {
 			// TODO: Respond with error type
-			return nil, err
+			return nil, errors.Wrap(err, "unmarshall failed")
 		}
 
 		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
@@ -100,7 +101,7 @@ func (service *Service) handleGetVelocity() (string, MsgHandler) {
 
 		dailyCounts, err := op.GetDailyCounts(service.Store, normalizedStart, normalizedEnd)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "get daily counts failed")
 		}
 
 		dailyVelocities := dailyCounts.ToVelocityScores()

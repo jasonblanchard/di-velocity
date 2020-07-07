@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -24,7 +25,7 @@ func (service *Service) WithLogger(topic string, handler MsgHandler) (string, Ms
 			service.Logger.Error().
 				Str("subject", m.Subject).
 				Err(err).
-				Msg("")
+				Msg(fmt.Sprintf("%+v", err))
 		}
 
 		service.Logger.Info().

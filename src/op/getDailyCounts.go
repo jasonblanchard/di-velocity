@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jasonblanchard/di-velocity/src/domain"
+	"github.com/pkg/errors"
 )
 
 // GetDailyCounts returns velocity score for each day between start and end (inclusive)
@@ -17,7 +18,7 @@ AND day >= $2
 AND day <= $3
 `, "1", start, end)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "db query failed")
 	}
 	defer rows.Close()
 
@@ -26,7 +27,7 @@ AND day <= $3
 	for rows.Next() {
 		dailyCount := domain.DailyCount{}
 		if err := rows.Scan(&dailyCount.Count, &dailyCount.Day, &dailyCount.CreatorID); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "scan rows failed")
 		}
 		dailyCounts = append(dailyCounts, dailyCount)
 	}
