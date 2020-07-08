@@ -8,7 +8,7 @@ import (
 )
 
 // WithLogger wraps handler with logs
-func (service *Service) WithLogger(topic string, handler MsgHandler) (string, MsgHandler) {
+func (service *Service) WithLogger(topic string, handler HandlerFunc) (string, HandlerFunc) {
 	return topic, func(m *nats.Msg) ([]byte, error) {
 		service.Logger.Debug().
 			Str("subject", m.Subject).
@@ -39,7 +39,7 @@ func (service *Service) WithLogger(topic string, handler MsgHandler) (string, Ms
 }
 
 // WithResponse Checks for reply channel and sends response back
-func (service *Service) WithResponse(topic string, handler MsgHandler) (string, MsgHandler) {
+func (service *Service) WithResponse(topic string, handler HandlerFunc) (string, HandlerFunc) {
 	return topic, func(m *nats.Msg) ([]byte, error) {
 		value, err := handler(m)
 

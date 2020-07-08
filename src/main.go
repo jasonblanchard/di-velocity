@@ -53,11 +53,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	service.Use(service.WithLogger)
+	service.Handlers()
+
 	if configFile != "" {
 		service.Logger.Info().Msg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 	}
-
-	service.Handlers()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT)

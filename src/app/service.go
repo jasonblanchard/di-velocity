@@ -12,11 +12,12 @@ import (
 
 // Service holds all service dependencies
 type Service struct {
-	Store           *sql.DB
-	Broker          *nats.Conn
-	Logger          *zerolog.Logger
-	BrokerQueueName string
-	TestMode        bool
+	Store            *sql.DB
+	Broker           *nats.Conn
+	Logger           *zerolog.Logger
+	BrokerQueueName  string
+	TestMode         bool
+	GlobalMiddleware []MiddlewareFunc
 }
 
 // ServiceInput arg for Service
@@ -68,22 +69,4 @@ func NewService(input *ServiceInput) (Service, error) {
 	service.Logger = &logger
 
 	return service, nil
-}
-
-// MsgHandler message handler function. Meant to be chained with middleware.
-type MsgHandler func(*nats.Msg) ([]byte, error)
-
-// MessageHandlerChainToNatsHandler takes message handler and makes it compatible with Nats
-func (service *Service) MessageHandlerChainToNatsHandler(handler MsgHandler) nats.MsgHandler {
-	return func(m *nats.Msg) {
-		handler(m)
-	}
-}
-
-// RegisterHandler wraps handler in default middleware and listens on Nats queue
-func (service *Service) RegisterHandler(topic string, handler MsgHandler) {
-	// TODO: Make default middleware configurable and map over them to create this root handler
-	_, handler = service.WithLogger(topic, handler)
-	wrappedHandler := service.MessageHandlerChainToNatsHandler(handler)
-	service.Broker.QueueSubscribe(topic, service.BrokerQueueName, wrappedHandler)
 }
