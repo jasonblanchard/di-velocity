@@ -6,8 +6,8 @@ import (
 	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
 	"github.com/jasonblanchard/di-velocity/src/di_messages/insights"
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
-	"github.com/jasonblanchard/di-velocity/src/op"
-	"github.com/jasonblanchard/di-velocity/src/utils"
+	"github.com/jasonblanchard/di-velocity/src/domain"
+	"github.com/jasonblanchard/di-velocity/src/repository"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -25,7 +25,7 @@ func (service *Service) Handlers() {
 
 func (service *Service) handleDrop() (string, HandlerFunc) {
 	return "insights.store.drop", func(m *nats.Msg) ([]byte, error) {
-		err := op.DropDailyCounts(service.Store)
+		err := repository.DropDailyCounts(service.Store)
 		if err != nil {
 			return nil, errors.Wrap(err, "DropDailyCounts failed")
 		}
@@ -42,8 +42,8 @@ func (service *Service) handleEntryUpdated() (string, HandlerFunc) {
 			return nil, errors.Wrap(err, "Unmarshall failed")
 		}
 
-		normalizedDay := utils.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
-		day := utils.TimeToProtoTime(normalizedDay)
+		normalizedDay := domain.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
+		day := TimeToProtoTime(normalizedDay)
 
 		incrementDailyCounterRequest := &insightsMessage.IncrementDailyCounter{
 			Payload: &insightsMessage.IncrementDailyCounter_Payload{
@@ -74,7 +74,7 @@ func (service *Service) handleIncrementDailyCounter() (string, HandlerFunc) {
 
 		day := time.Unix(requestMessage.Payload.Day.Seconds, 0).UTC()
 
-		err = op.IncrementDailyCounter(service.Store, day, requestMessage.Payload.CreatorId)
+		err = repository.IncrementDailyCounter(service.Store, day, requestMessage.Payload.CreatorId)
 		if err != nil {
 			return nil, errors.Wrap(err, "increment failed")
 		}
@@ -92,10 +92,10 @@ func (service *Service) handleGetVelocity() (string, HandlerFunc) {
 			return nil, errors.Wrap(err, "unmarshall failed")
 		}
 
-		normalizedStart := utils.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
-		normalizedEnd := utils.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
+		normalizedStart := domain.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
+		normalizedEnd := domain.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
 
-		dailyCounts, err := op.GetDailyCounts(service.Store, normalizedStart, normalizedEnd)
+		dailyCounts, err := repository.GetDailyCounts(service.Store, normalizedStart, normalizedEnd)
 		if err != nil {
 			return nil, errors.Wrap(err, "get daily counts failed")
 		}
@@ -103,7 +103,7 @@ func (service *Service) handleGetVelocity() (string, HandlerFunc) {
 		dailyVelocities := dailyCounts.ToVelocityScores()
 
 		responseMessage := &insightsMessage.GetVelocityResponse{
-			Payload: dailyVelocities.ToDtoPayload(),
+			Payload: VelocitiesToProtoPayload(dailyVelocities),
 		}
 
 		return proto.Marshal(responseMessage)

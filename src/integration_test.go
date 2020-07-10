@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jasonblanchard/di-velocity/src/app"
 	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
 	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
-	"github.com/jasonblanchard/di-velocity/src/utils"
 
 	"github.com/golang/protobuf/proto"
 	nats "github.com/nats-io/nats.go"
@@ -14,7 +14,7 @@ import (
 )
 
 func updateEntry(nc *nats.Conn, date time.Time) error {
-	uptdateAt := utils.TimeToProtoTime(date)
+	uptdateAt := app.TimeToProtoTime(date)
 
 	updateEntryMessage := &entryMessage.InfoEntryUpdated{
 		Payload: &entryMessage.InfoEntryUpdated_Payload{
@@ -65,10 +65,10 @@ func TestIntegration(t *testing.T) {
 			}
 
 			startTime := time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC)
-			start := utils.TimeToProtoTime(startTime)
+			start := app.TimeToProtoTime(startTime)
 
 			endTime := time.Date(2020, time.January, 1, 30, 2, 03, 04, time.UTC)
-			end := utils.TimeToProtoTime(endTime)
+			end := app.TimeToProtoTime(endTime)
 
 			requestMessage := &insightsMessage.GetVelocityRequest{
 				Payload: &insightsMessage.GetVelocityRequest_Payload{
