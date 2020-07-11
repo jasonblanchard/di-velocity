@@ -3,11 +3,11 @@ package app
 import (
 	"time"
 
-	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
-	"github.com/jasonblanchard/di-velocity/src/di_messages/insights"
-	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
-	"github.com/jasonblanchard/di-velocity/src/domain"
-	"github.com/jasonblanchard/di-velocity/src/repository"
+	entryMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/entry"
+	"github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
+	insightsMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
+	"github.com/jasonblanchard/di-velocity/internal/domain"
+	"github.com/jasonblanchard/di-velocity/internal/repository"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"

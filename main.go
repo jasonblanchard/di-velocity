@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/jasonblanchard/di-velocity/src/app"
+	"github.com/jasonblanchard/di-velocity/internal/app"
 	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"

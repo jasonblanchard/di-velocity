@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jasonblanchard/di-velocity/src/app"
-	entryMessage "github.com/jasonblanchard/di-velocity/src/di_messages/entry"
-	insightsMessage "github.com/jasonblanchard/di-velocity/src/di_messages/insights"
+	"github.com/jasonblanchard/di-velocity/internal/app"
+	entryMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/entry"
+	insightsMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
 
 	"github.com/golang/protobuf/proto"
 	nats "github.com/nats-io/nats.go"

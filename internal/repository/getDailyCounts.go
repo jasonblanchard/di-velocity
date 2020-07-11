@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/jasonblanchard/di-velocity/src/domain"
+	"github.com/jasonblanchard/di-velocity/internal/domain"
 	"github.com/pkg/errors"
 )
 
