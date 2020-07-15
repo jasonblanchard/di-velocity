@@ -3,16 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
-	"runtime"
-	"syscall"
 
 	"github.com/jasonblanchard/di-velocity/internal/app"
+	"github.com/jasonblanchard/di-velocity/internal/container"
+	initializer "github.com/jasonblanchard/di-velocity/internal/container"
 	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"
 
+	"github.com/jasonblanchard/natsby"
 	nats "github.com/nats-io/nats.go"
 )
 
@@ -37,7 +36,7 @@ func main() {
 
 	configFile := initConfig(*config)
 
-	serviceInput := &app.ServiceInput{
+	containerInput := &initializer.Input{
 		PostgresUser:     viper.GetString("db_user"),
 		PostgresPassword: viper.GetString("db_password"),
 		PostgresDbName:   viper.GetString("db_name"),
@@ -47,29 +46,49 @@ func main() {
 		TestMode:         viper.GetBool("test_mode"),
 	}
 
-	service, err := app.NewService(serviceInput)
-	if err != nil {
-		fmt.Printf("Cannot configure application: %s", err)
-		os.Exit(1)
-	}
+	container, err := container.New(containerInput)
 
-	service.Use(service.WithLogger)
-	service.Handlers()
+	if err != nil {
+		panic(err)
+	}
 
 	if configFile != "" {
-		service.Logger.Info().Msg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
+		container.Logger.Info().Msg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 	}
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT)
-	go func() {
-		// Wait for signal
-		<-c
-		service.Store.Close()
-		service.Broker.Drain()
-		os.Exit(0)
-	}()
+	configureLogger := func(e *natsby.Engine) error {
+		e.Logger = container.Logger
+		return nil
+	}
 
-	service.Logger.Info().Msg("Ready to receive messages")
-	runtime.Goexit()
+	configureNATS := func(e *natsby.Engine) error {
+		e.NatsConnection = container.Broker
+		return nil
+	}
+
+	engine, err := natsby.New(configureLogger, configureNATS)
+	if err != nil {
+		panic(err)
+	}
+
+	engine.Use(natsby.WithLogger())
+
+	app.Handlers(container, engine)
+
+	engine.Run(func() {
+		container.Logger.Info().Msg("Ready to receive messages")
+	})
+
+	// c := make(chan os.Signal, 1)
+	// signal.Notify(c, syscall.SIGINT)
+	// go func() {
+	// 	// Wait for signal
+	// 	<-c
+	// 	db.Close()
+	// 	engine.NatsConnection.Drain()
+	// 	os.Exit(0)
+	// }()
+
+	// logger.Info().Msg("Ready to receive messages")
+	// runtime.Goexit()
 }

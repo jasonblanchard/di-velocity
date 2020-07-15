@@ -1,4 +1,4 @@
-package app
+package container
 
 import (
 	"database/sql"
@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// Service holds all service dependencies
-type Service struct {
+// Container holds all service dependencies
+type Container struct {
 	Store           *sql.DB
 	Broker          *nats.Conn
 	Logger          *zerolog.Logger
@@ -19,8 +19,8 @@ type Service struct {
 	TestMode        bool
 }
 
-// ServiceInput arg for Service
-type ServiceInput struct {
+// Input arg for Service
+type Input struct {
 	PostgresUser     string
 	PostgresPassword string
 	PostgresDbName   string
@@ -30,31 +30,31 @@ type ServiceInput struct {
 	TestMode         bool
 }
 
-// NewService initializes service dependencies
-func NewService(input *ServiceInput) (Service, error) {
-	service := Service{
+// New initializes service dependencies
+func New(input *Input) (*Container, error) {
+	container := &Container{
 		BrokerQueueName: "velocity",
 		TestMode:        input.TestMode,
 	}
 
 	db, err := InitalizePostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName)
 	if err != nil {
-		return service, err
+		return container, err
 	}
 
-	service.Store = db
+	container.Store = db
 
 	nc, err := InitializeNATS(input.NatsURL)
 	if err != nil {
-		return service, err
+		return container, err
 	}
 
-	service.Broker = nc
+	container.Broker = nc
 
 	logger := InitializeLogger(input.Debug, input.Pretty)
-	service.Logger = logger
+	container.Logger = logger
 
-	return service, nil
+	return container, nil
 }
 
 // InitializeLogger sets up the logger

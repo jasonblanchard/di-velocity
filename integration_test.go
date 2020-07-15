@@ -42,7 +42,11 @@ func TestIntegration(t *testing.T) {
 		}
 
 		Convey("works", func() {
-			nc.Request("insights.store.drop", []byte(""), 3*time.Second)
+			_, err := nc.Request("insights.store.drop", []byte(""), 3*time.Second)
+
+			if err != nil {
+				panic(err)
+			}
 
 			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
 			updateEntry(nc, time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC))
@@ -58,7 +62,7 @@ func TestIntegration(t *testing.T) {
 			updateEntry(nc, time.Date(2021, time.January, 2, 12, 2, 03, 04, time.UTC))
 
 			// Let everything resolve
-			time.Sleep(2 * time.Second)
+			time.Sleep(3 * time.Second)
 
 			if err != nil {
 				panic(err)
