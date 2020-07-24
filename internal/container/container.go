@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jasonblanchard/di-velocity/internal/repository"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 )
@@ -17,6 +18,7 @@ type Container struct {
 	Logger          *zerolog.Logger
 	BrokerQueueName string
 	TestMode        bool
+	Repository      repository.T
 }
 
 // Input arg for Service
@@ -41,6 +43,13 @@ func New(input *Input) (*Container, error) {
 	if err != nil {
 		return container, err
 	}
+
+	repository, err := repository.NewPostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName)
+	if err != nil {
+		return container, err
+	}
+
+	container.Repository = repository
 
 	container.Store = db
 

@@ -4,9 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/jasonblanchard/di-velocity/internal/app"
 	"github.com/jasonblanchard/di-velocity/internal/container"
-	initializer "github.com/jasonblanchard/di-velocity/internal/container"
+	"github.com/jasonblanchard/di-velocity/internal/handlers"
 	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"
@@ -36,7 +35,7 @@ func main() {
 
 	configFile := initConfig(*config)
 
-	containerInput := &initializer.Input{
+	containerInput := &container.Input{
 		PostgresUser:     viper.GetString("db_user"),
 		PostgresPassword: viper.GetString("db_password"),
 		PostgresDbName:   viper.GetString("db_name"),
@@ -73,22 +72,9 @@ func main() {
 
 	engine.Use(natsby.WithLogger())
 
-	app.Handlers(container, engine)
+	handlers.Subscribe(container, engine)
 
 	engine.Run(func() {
 		container.Logger.Info().Msg("Ready to receive messages")
 	})
-
-	// c := make(chan os.Signal, 1)
-	// signal.Notify(c, syscall.SIGINT)
-	// go func() {
-	// 	// Wait for signal
-	// 	<-c
-	// 	db.Close()
-	// 	engine.NatsConnection.Drain()
-	// 	os.Exit(0)
-	// }()
-
-	// logger.Info().Msg("Ready to receive messages")
-	// runtime.Goexit()
 }

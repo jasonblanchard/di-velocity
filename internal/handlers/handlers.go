@@ -1,7 +1,6 @@
-package app
+package handlers
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/jasonblanchard/di-velocity/internal/container"
@@ -9,39 +8,39 @@ import (
 	"github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
 	insightsMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
 	"github.com/jasonblanchard/di-velocity/internal/domain"
+	"github.com/jasonblanchard/di-velocity/internal/mappers"
 	"github.com/jasonblanchard/di-velocity/internal/repository"
 	"github.com/jasonblanchard/natsby"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
-func withDb(db *sql.DB) natsby.HandlerFunc {
+func withRepository(repository repository.T) natsby.HandlerFunc {
 	return func(c *natsby.Context) {
-		c.Set("db", db)
+		c.Set("repository", repository)
 	}
 }
 
-// Handlers configures all the handlers
-func Handlers(c *container.Container, e *natsby.Engine) {
+// Subscribe configures all the handlers
+func Subscribe(c *container.Container, e *natsby.Engine) {
 
 	if c.TestMode == true {
-		e.Subscribe("insights.store.drop", natsby.WithByteReply(), withDb(c.Store), handleDrop())
+		e.Subscribe("insights.store.drop", natsby.WithByteReply(), withRepository(c.Repository), handleDrop())
 	}
 	e.Subscribe("info.entry.updated", handleEntryUpdated())
-	// service.RegisterHandler(service.handleIncrementDailyCounter())
-	e.Subscribe("insights.increment.dailyCounter", natsby.WithByteReply(), withDb(c.Store), handleIncrementDailyCounter())
-	e.Subscribe("insights.get.velocity", natsby.WithByteReply(), withDb(c.Store), handleGetVelocity())
+	e.Subscribe("insights.increment.dailyCounter", natsby.WithByteReply(), withRepository(c.Repository), handleIncrementDailyCounter())
+	e.Subscribe("insights.get.velocity", natsby.WithByteReply(), withRepository(c.Repository), handleGetVelocity())
 }
 
 func handleDrop() natsby.HandlerFunc {
 	return func(c *natsby.Context) {
-		db, ok := c.Get("db").(*sql.DB)
+		repository, ok := c.Get("repository").(repository.T)
 
 		if ok != true {
-			c.Err = errors.Wrap(errors.New("cast error"), "Db not initialized")
+			c.Err = errors.Wrap(errors.New("cast error"), "Repository not initialized")
 		}
 
-		err := repository.DropDailyCounts(db)
+		err := repository.DropDailyCounts()
 		if err != nil {
 			c.Err = errors.Wrap(err, "DropDailyCounts failed")
 			return
@@ -61,7 +60,7 @@ func handleEntryUpdated() natsby.HandlerFunc {
 		}
 
 		normalizedDay := domain.NormalizeTime(time.Unix(entryUpdatedMessage.Payload.UpdatedAt.Seconds, 0))
-		day := TimeToProtoTime(normalizedDay)
+		day := mappers.TimeToProtoTime(normalizedDay)
 
 		incrementDailyCounterRequest := &insightsMessage.IncrementDailyCounter{
 			Payload: &insightsMessage.IncrementDailyCounter_Payload{
@@ -83,10 +82,10 @@ func handleEntryUpdated() natsby.HandlerFunc {
 
 func handleIncrementDailyCounter() natsby.HandlerFunc {
 	return func(c *natsby.Context) {
-		db, ok := c.Get("db").(*sql.DB)
+		repository, ok := c.Get("repository").(repository.T)
 
 		if ok != true {
-			c.Err = errors.Wrap(errors.New("cast error"), "Db not initialized")
+			c.Err = errors.Wrap(errors.New("cast error"), "Repository not initialized")
 		}
 
 		requestMessage := &insights.IncrementDailyCounter{}
@@ -98,7 +97,7 @@ func handleIncrementDailyCounter() natsby.HandlerFunc {
 
 		day := time.Unix(requestMessage.Payload.Day.Seconds, 0).UTC()
 
-		err = repository.IncrementDailyCounter(db, day, requestMessage.Payload.CreatorId)
+		err = repository.IncrementDailyCounter(day, requestMessage.Payload.CreatorId)
 		if err != nil {
 			c.Err = errors.Wrap(err, "increment failed")
 			return
@@ -108,10 +107,10 @@ func handleIncrementDailyCounter() natsby.HandlerFunc {
 
 func handleGetVelocity() natsby.HandlerFunc {
 	return func(c *natsby.Context) {
-		db, ok := c.Get("db").(*sql.DB)
+		repository, ok := c.Get("repository").(repository.T)
 
 		if ok != true {
-			c.Err = errors.Wrap(errors.New("cast error"), "Db not initialized")
+			c.Err = errors.Wrap(errors.New("cast error"), "Repository not initialized")
 		}
 
 		requestMessage := &insightsMessage.GetVelocityRequest{}
@@ -125,7 +124,7 @@ func handleGetVelocity() natsby.HandlerFunc {
 		normalizedStart := domain.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
 		normalizedEnd := domain.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
 
-		dailyCounts, err := repository.GetDailyCounts(db, normalizedStart, normalizedEnd)
+		dailyCounts, err := repository.GetDailyCounts(normalizedStart, normalizedEnd)
 		if err != nil {
 			c.Err = errors.Wrap(err, "get daily counts failed")
 			return
@@ -134,7 +133,7 @@ func handleGetVelocity() natsby.HandlerFunc {
 		dailyVelocities := dailyCounts.ToVelocityScores()
 
 		responseMessage := &insightsMessage.GetVelocityResponse{
-			Payload: VelocitiesToProtoPayload(dailyVelocities),
+			Payload: mappers.VelocitiesToProtoPayload(dailyVelocities),
 		}
 
 		message, err := proto.Marshal(responseMessage)
