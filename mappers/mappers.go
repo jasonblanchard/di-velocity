@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
-	"github.com/jasonblanchard/di-velocity/internal/domain"
+	"github.com/jasonblanchard/di-velocity/di_messages/insights"
+	"github.com/jasonblanchard/di-velocity/domain"
 )
 
 // VelocitiesToProtoPayload converts velocity domain objects to protobuf payload

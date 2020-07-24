@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/jasonblanchard/di-velocity/internal/domain"
+	"github.com/jasonblanchard/di-velocity/domain"
 )
 
 // T interface for reposutory functions

@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/jasonblanchard/di-velocity/internal/repository"
+	"github.com/jasonblanchard/di-velocity/repository"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"

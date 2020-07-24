@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jasonblanchard/di-velocity/internal/domain"
+	"github.com/jasonblanchard/di-velocity/domain"
 	"github.com/pkg/errors"
 )
 

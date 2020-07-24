@@ -4,8 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/jasonblanchard/di-velocity/internal/container"
-	"github.com/jasonblanchard/di-velocity/internal/handlers"
+	"github.com/jasonblanchard/di-velocity/container"
 	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"
@@ -53,7 +52,7 @@ func main() {
 
 	engine.Use(natsby.WithLogger(container.Logger))
 
-	handlers.Subscribe(container, engine)
+	SubscribeHandlers(container, engine)
 
 	engine.Run(func() {
 		container.Logger.Info().Msg("Ready to receive messages")

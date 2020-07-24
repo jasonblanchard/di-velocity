@@ -1,15 +1,15 @@
-package handlers
+package main
 
 import (
 	"time"
 
-	"github.com/jasonblanchard/di-velocity/internal/container"
-	entryMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/entry"
-	"github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
-	insightsMessage "github.com/jasonblanchard/di-velocity/internal/di_messages/insights"
-	"github.com/jasonblanchard/di-velocity/internal/domain"
-	"github.com/jasonblanchard/di-velocity/internal/mappers"
-	"github.com/jasonblanchard/di-velocity/internal/repository"
+	"github.com/jasonblanchard/di-velocity/container"
+	entryMessage "github.com/jasonblanchard/di-velocity/di_messages/entry"
+	"github.com/jasonblanchard/di-velocity/di_messages/insights"
+	insightsMessage "github.com/jasonblanchard/di-velocity/di_messages/insights"
+	"github.com/jasonblanchard/di-velocity/domain"
+	"github.com/jasonblanchard/di-velocity/mappers"
+	"github.com/jasonblanchard/di-velocity/repository"
 	"github.com/jasonblanchard/natsby"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -21,8 +21,8 @@ func withRepository(repository repository.T) natsby.HandlerFunc {
 	}
 }
 
-// Subscribe configures all the handlers
-func Subscribe(c *container.Container, e *natsby.Engine) {
+// SubscribeHandlers configures all the handlers
+func SubscribeHandlers(c *container.Container, e *natsby.Engine) {
 
 	if c.TestMode == true {
 		e.Subscribe("insights.store.drop", natsby.WithByteReply(), withRepository(c.Repository), handleDrop())
