@@ -14,26 +14,11 @@ import (
 	nats "github.com/nats-io/nats.go"
 )
 
-var natsQueue = "valocity"
-
-func initConfig(path string) string {
-	if path != "" {
-		viper.SetConfigFile(path)
-	}
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-
-	if err != nil {
-		return ""
-	}
-	return viper.ConfigFileUsed()
-}
-
 func main() {
 	config := flag.String("config", "", "Path to config file")
 	flag.Parse()
 
-	configFile := initConfig(*config)
+	configFile := container.InitExternalConfig(*config)
 
 	containerInput := &container.Input{
 		PostgresUser:     viper.GetString("db_user"),
@@ -43,6 +28,7 @@ func main() {
 		Debug:            viper.GetBool("debug"),
 		Pretty:           viper.GetBool("pretty"),
 		TestMode:         viper.GetBool("test_mode"),
+		NATSQueue:        "velocity",
 	}
 
 	container, err := container.New(containerInput)
@@ -55,22 +41,17 @@ func main() {
 		container.Logger.Info().Msg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 	}
 
-	configureLogger := func(e *natsby.Engine) error {
-		e.Logger = container.Logger
-		return nil
-	}
-
 	configureNATS := func(e *natsby.Engine) error {
-		e.NatsConnection = container.Broker
+		e.NatsConnection = container.NATSConnection
 		return nil
 	}
 
-	engine, err := natsby.New(configureLogger, configureNATS)
+	engine, err := natsby.New(configureNATS)
 	if err != nil {
 		panic(err)
 	}
 
-	engine.Use(natsby.WithLogger())
+	engine.Use(natsby.WithLogger(container.Logger))
 
 	handlers.Subscribe(container, engine)
 

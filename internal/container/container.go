@@ -1,24 +1,22 @@
 package container
 
 import (
-	"database/sql"
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/jasonblanchard/di-velocity/internal/repository"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+	"github.com/spf13/viper"
 )
 
 // Container holds all service dependencies
 type Container struct {
-	Store           *sql.DB
-	Broker          *nats.Conn
-	Logger          *zerolog.Logger
-	BrokerQueueName string
-	TestMode        bool
-	Repository      repository.T
+	NATSConnection *nats.Conn
+	Logger         *zerolog.Logger
+	NATSQueue      string
+	TestMode       bool
+	Repository     repository.T
 }
 
 // Input arg for Service
@@ -30,18 +28,14 @@ type Input struct {
 	Debug            bool
 	Pretty           bool
 	TestMode         bool
+	NATSQueue        string
 }
 
 // New initializes service dependencies
 func New(input *Input) (*Container, error) {
 	container := &Container{
-		BrokerQueueName: "velocity",
-		TestMode:        input.TestMode,
-	}
-
-	db, err := InitalizePostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName)
-	if err != nil {
-		return container, err
+		NATSQueue: input.NATSQueue,
+		TestMode:  input.TestMode,
 	}
 
 	repository, err := repository.NewPostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName)
@@ -51,23 +45,20 @@ func New(input *Input) (*Container, error) {
 
 	container.Repository = repository
 
-	container.Store = db
-
-	nc, err := InitializeNATS(input.NatsURL)
+	nc, err := initializeNATS(input.NatsURL)
 	if err != nil {
 		return container, err
 	}
 
-	container.Broker = nc
+	container.NATSConnection = nc
 
-	logger := InitializeLogger(input.Debug, input.Pretty)
+	logger := initializeLogger(input.Debug, input.Pretty)
 	container.Logger = logger
 
 	return container, nil
 }
 
-// InitializeLogger sets up the logger
-func InitializeLogger(debug, pretty bool) *zerolog.Logger {
+func initializeLogger(debug, pretty bool) *zerolog.Logger {
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	if pretty == true {
 		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
@@ -81,25 +72,26 @@ func InitializeLogger(debug, pretty bool) *zerolog.Logger {
 	return &logger
 }
 
-// InitalizePostgres sets up DB
-func InitalizePostgres(user, password, dbname string) (*sql.DB, error) {
-	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
-	db, err := sql.Open("postgres", connStr)
-	// db.SetMaxOpenConns(25)
-	// db.SetMaxIdleConns(25)
-	// db.SetConnMaxLifetime(5 * time.Minute)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
-}
-
 // InitializeNATS sets up NATS connection
-func InitializeNATS(url string) (*nats.Conn, error) {
+func initializeNATS(url string) (*nats.Conn, error) {
 	nc, err := nats.Connect(url)
 	if err != nil {
 		return nil, err
 	}
 
 	return nc, nil
+}
+
+// InitExternalConfig pull in configuration from environment or file
+func InitExternalConfig(path string) string {
+	if path != "" {
+		viper.SetConfigFile(path)
+	}
+	viper.AutomaticEnv()
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		return ""
+	}
+	return viper.ConfigFileUsed()
 }
