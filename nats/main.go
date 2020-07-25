@@ -40,17 +40,22 @@ func main() {
 		container.Logger.Info().Msg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 	}
 
-	configureNATS := func(e *natsby.Engine) error {
-		e.NatsConnection = container.NATSConnection
-		return nil
-	}
-
-	engine, err := natsby.New(configureNATS)
+	engine, err := natsby.New(container.NATSConnection)
 	if err != nil {
 		panic(err)
 	}
 
 	engine.Use(natsby.WithLogger(container.Logger))
+	engine.Use(natsby.WithCustomRecovery(func(c *natsby.Context, err interface{}) {
+		container.Logger.Error().
+			Str("subject", c.Msg.Subject).
+			Str("replyChan", c.Msg.Reply).
+			Msg(fmt.Sprintf("%+v", err))
+
+		if c.Msg.Reply != "" {
+			c.Engine.NatsConnection.Publish(c.Msg.Reply, []byte("")) // TODO: Return an error object
+		}
+	}))
 
 	SubscribeHandlers(container, engine)
 
