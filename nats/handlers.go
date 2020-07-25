@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jasonblanchard/di-velocity/container"
 	entryMessage "github.com/jasonblanchard/di-velocity/di_messages/entry"
+	errorMessage "github.com/jasonblanchard/di-velocity/di_messages/error"
 	"github.com/jasonblanchard/di-velocity/di_messages/insights"
 	insightsMessage "github.com/jasonblanchard/di-velocity/di_messages/insights"
 	"github.com/jasonblanchard/di-velocity/domain"
@@ -143,5 +145,21 @@ func handleGetVelocity() natsby.HandlerFunc {
 		}
 
 		c.ByteReplyPayload = message
+	}
+}
+
+// Recovery custom recovery function
+func Recovery(container *container.Container) natsby.RecoveryFunc {
+	return func(c *natsby.Context, err interface{}) {
+		container.Logger.Error().
+			Str("subject", c.Msg.Subject).
+			Str("replyChan", c.Msg.Reply).
+			Msg(fmt.Sprintf("%+v", err))
+
+		if c.Msg.Reply != "" {
+			errorMessage := &errorMessage.Error{}
+			message, _ := proto.Marshal(errorMessage)
+			c.Engine.NatsConnection.Publish(c.Msg.Reply, message)
+		}
 	}
 }

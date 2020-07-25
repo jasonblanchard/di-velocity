@@ -46,16 +46,7 @@ func main() {
 	}
 
 	engine.Use(natsby.WithLogger(container.Logger))
-	engine.Use(natsby.WithCustomRecovery(func(c *natsby.Context, err interface{}) {
-		container.Logger.Error().
-			Str("subject", c.Msg.Subject).
-			Str("replyChan", c.Msg.Reply).
-			Msg(fmt.Sprintf("%+v", err))
-
-		if c.Msg.Reply != "" {
-			c.Engine.NatsConnection.Publish(c.Msg.Reply, []byte("")) // TODO: Return an error object
-		}
-	}))
+	engine.Use(natsby.WithCustomRecovery(Recovery(container)))
 
 	SubscribeHandlers(container, engine)
 
