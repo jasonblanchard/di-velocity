@@ -10,7 +10,6 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/jasonblanchard/natsby"
-	nats "github.com/nats-io/nats.go"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 		PostgresUser:     viper.GetString("db_user"),
 		PostgresPassword: viper.GetString("db_password"),
 		PostgresDbName:   viper.GetString("db_name"),
-		NatsURL:          nats.DefaultURL,
+		NatsURL:          viper.GetString("nats_url"),
 		Debug:            viper.GetBool("debug"),
 		Pretty:           viper.GetBool("pretty"),
 		TestMode:         viper.GetBool("test_mode"),
