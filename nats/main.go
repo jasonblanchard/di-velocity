@@ -45,7 +45,7 @@ func main() {
 	}
 
 	engine.Use(natsby.WithLogger(container.Logger))
-	engine.Use(natsby.WithCustomRecovery(Recovery(container)))
+	// engine.Use(natsby.WithCustomRecovery(Recovery(container)))
 
 	SubscribeHandlers(container, engine)
 
