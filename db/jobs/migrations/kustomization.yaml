@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: di
+resources:
+- migrations.yaml
+nameSuffix: "-6156c57d773fd35d17845bf92cc70e78a7bcd914" # {"$ref":"#/definitions/io.k8s.cli.substitutions.name-suffix"}
+images:
+- name: jasonblanchard/di-velocity-migrations
+  newTag: "6156c57d773fd35d17845bf92cc70e78a7bcd914" # {"$ref":"#/definitions/io.k8s.cli.setters.tag"}
+configMapGenerator:
+- name: velocity-migrations-config
+  namespace: di
+  literals:
+  - USER=postgres
+  - PASSWORD=vault:secret/data/di-velocity/production/app#DB_PASSWORD
+  - HOST=di-velocity-psql
+  - PORT=5432
+  - DATABASE=di_velocity

@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: di-velocity-migrations
+  namespace: di
+spec:
+  template:
+    metadata:
+      annotations:
+        vault.security.banzaicloud.io/vault-addr: https://vault.vault:8200
+        vault.security.banzaicloud.io/vault-role: di-velocity
+        vault.security.banzaicloud.io/vault-skip-verify: "true"
+    spec:
+      serviceAccountName: velocity
+      containers:
+      - image: jasonblanchard/di-velocity-migrations
+        name: di-velocity-migrations
+        envFrom:
+        - configMapRef:
+            name: velocity-migrations-config
+      restartPolicy: Never
