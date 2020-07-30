@@ -21,6 +21,7 @@ func main() {
 	containerInput := &container.Input{
 		PostgresUser:     viper.GetString("db_user"),
 		PostgresPassword: viper.GetString("db_password"),
+		PostgresHost:     viper.GetString("db_host"),
 		PostgresDbName:   viper.GetString("db_name"),
 		NatsURL:          viper.GetString("nats_url"),
 		Debug:            viper.GetBool("debug"),

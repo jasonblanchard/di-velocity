@@ -14,5 +14,6 @@ configMapGenerator:
   - DB_USER=postgres
   - DB_NAME=di_velocity
   - DB_PASSWORD=vault:secret/data/di-velocity/production/app#DB_PASSWORD
+  - DB_HOST=di-velocity-psql
   name: velocity-config
   behavior: merge

@@ -24,6 +24,7 @@ type Input struct {
 	PostgresUser     string
 	PostgresPassword string
 	PostgresDbName   string
+	PostgresHost     string
 	NatsURL          string
 	Debug            bool
 	Pretty           bool
@@ -38,7 +39,7 @@ func New(input *Input) (*Container, error) {
 		TestMode:  input.TestMode,
 	}
 
-	repository, err := repository.NewPostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName)
+	repository, err := repository.NewPostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName, input.PostgresHost)
 	if err != nil {
 		return container, err
 	}

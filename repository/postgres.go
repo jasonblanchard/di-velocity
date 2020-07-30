@@ -15,10 +15,10 @@ type Postgres struct {
 }
 
 // NewPostgres creates a new Postgres repository
-func NewPostgres(user string, password string, dbname string) (*Postgres, error) {
+func NewPostgres(user string, password string, dbname string, host string) (*Postgres, error) {
 	postgres := &Postgres{}
 
-	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
+	connStr := fmt.Sprintf("user=%s password=%s host=%s dbname=%s sslmode=disable", user, password, host, dbname)
 	connection, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return postgres, err
