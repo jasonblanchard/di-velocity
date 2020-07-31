@@ -6,6 +6,7 @@ import (
 
 	"github.com/jasonblanchard/di-velocity/repository"
 	"github.com/nats-io/nats.go"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
@@ -41,14 +42,14 @@ func New(input *Input) (*Container, error) {
 
 	repository, err := repository.NewPostgres(input.PostgresUser, input.PostgresPassword, input.PostgresDbName, input.PostgresHost)
 	if err != nil {
-		return container, err
+		return container, errors.Wrap(err, "Repository initialization failed")
 	}
 
 	container.Repository = repository
 
 	nc, err := initializeNATS(input.NatsURL)
 	if err != nil {
-		return container, err
+		return container, errors.Wrap(err, "NATS initialization failed")
 	}
 
 	container.NATSConnection = nc

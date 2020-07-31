@@ -121,6 +121,8 @@ github.com/jasonblanchard/natsby v0.0.0-20200721014246-851bd329cbc2 h1:I6KOm/5zp
 github.com/jasonblanchard/natsby v0.0.0-20200721014246-851bd329cbc2/go.mod h1:mQ4opWyLodSoFhT0k0aJx8AshIH49npCUq683B46vc4=
 github.com/jasonblanchard/natsby v0.0.0-20200725202814-acd35b3220b5 h1:5JcpmPOqrsw/WvXDRaL329oW6sHWGXjM7XdtEOYmhRw=
 github.com/jasonblanchard/natsby v0.0.0-20200725202814-acd35b3220b5/go.mod h1:mQ4opWyLodSoFhT0k0aJx8AshIH49npCUq683B46vc4=
+github.com/jasonblanchard/natsby v0.0.0-20200731115952-c0272b344c59 h1:4cgI0Vdsi5393M6roh2j1CMn1Fh5FcGPpRApWU0A1iw=
+github.com/jasonblanchard/natsby v0.0.0-20200731115952-c0272b344c59/go.mod h1:mQ4opWyLodSoFhT0k0aJx8AshIH49npCUq683B46vc4=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=

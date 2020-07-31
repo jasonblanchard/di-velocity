@@ -20,8 +20,10 @@ func NewPostgres(user string, password string, dbname string, host string) (*Pos
 
 	connStr := fmt.Sprintf("user=%s password=%s host=%s dbname=%s sslmode=disable", user, password, host, dbname)
 	connection, err := sql.Open("postgres", connStr)
+	// Ensure a healthy DB connection
+	err = connection.Ping()
 	if err != nil {
-		return postgres, err
+		return postgres, errors.Wrap(err, "Database connetion failed")
 	}
 	postgres.Connection = connection
 	return postgres, nil

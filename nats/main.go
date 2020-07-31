@@ -33,7 +33,8 @@ func main() {
 	container, err := container.New(containerInput)
 
 	if err != nil {
-		panic(err)
+		// panic(errors.Cause(err))
+		panic(fmt.Sprintf("%+v", err))
 	}
 
 	if configFile != "" {
@@ -46,7 +47,7 @@ func main() {
 	}
 
 	engine.Use(natsby.WithLogger(container.Logger))
-	// engine.Use(natsby.WithCustomRecovery(Recovery(container)))
+	engine.Use(natsby.WithCustomRecovery(Recovery(container)))
 
 	SubscribeHandlers(container, engine)
 
