@@ -71,7 +71,7 @@ func TestIntegration(t *testing.T) {
 			startTime := time.Date(2020, time.January, 1, 10, 2, 03, 04, time.UTC)
 			start := mappers.TimeToProtoTime(startTime)
 
-			endTime := time.Date(2020, time.January, 1, 30, 2, 03, 04, time.UTC)
+			endTime := time.Date(2020, time.January, 10, 30, 2, 03, 04, time.UTC)
 			end := mappers.TimeToProtoTime(endTime)
 
 			requestMessage := &insightsMessage.GetVelocityRequest{
@@ -94,7 +94,7 @@ func TestIntegration(t *testing.T) {
 			response := &insightsMessage.GetVelocityResponse{}
 			err = proto.Unmarshal(responseMessage.Data, response)
 			So(err, ShouldBeNil)
-			So(len(response.Payload), ShouldEqual, 2)
+			So(len(response.Payload), ShouldEqual, 11)
 			So(response.Payload[0].Day.Seconds, ShouldEqual, 1577836800)
 			So(response.Payload[0].Score, ShouldEqual, 1)
 			So(response.Payload[1].Day.Seconds, ShouldEqual, 1577923200)

@@ -133,9 +133,10 @@ func handleGetVelocity() natsby.HandlerFunc {
 		}
 
 		dailyVelocities := dailyCounts.ToVelocityScores()
+		expandedDailyVelocities := domain.ExpandVelicityScores(dailyVelocities, normalizedStart, normalizedEnd)
 
 		responseMessage := &insightsMessage.GetVelocityResponse{
-			Payload: mappers.VelocitiesToProtoPayload(dailyVelocities),
+			Payload: mappers.VelocitiesToProtoPayload(expandedDailyVelocities),
 		}
 
 		message, err := proto.Marshal(responseMessage)

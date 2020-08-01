@@ -20,7 +20,7 @@ func (counts DailyCounts) ToVelocityScores() DailyVelocities {
 
 	for i := 0; i < len(counts); i++ {
 		dailyVelocity := DailyVelocity{
-			Day:   counts[i].Day,
+			Day:   counts[i].Day.UTC(),
 			Score: CountToScore(counts[i].Count), // TODO: Convert to score
 		}
 		dailyVelocities = append(dailyVelocities, dailyVelocity)
