@@ -126,7 +126,7 @@ func handleGetVelocity() natsby.HandlerFunc {
 		normalizedStart := domain.NormalizeTime(time.Unix(requestMessage.Payload.Start.Seconds, 0).UTC())
 		normalizedEnd := domain.NormalizeTime(time.Unix(requestMessage.Payload.End.Seconds, 0).UTC())
 
-		dailyCounts, err := repository.GetDailyCounts(normalizedStart, normalizedEnd)
+		dailyCounts, err := repository.GetDailyCounts(requestMessage.Payload.CreatorId, normalizedStart, normalizedEnd)
 		if err != nil {
 			c.Err = errors.Wrap(err, "get daily counts failed")
 			return

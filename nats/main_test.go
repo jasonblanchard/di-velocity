@@ -76,8 +76,9 @@ func TestIntegration(t *testing.T) {
 
 			requestMessage := &insightsMessage.GetVelocityRequest{
 				Payload: &insightsMessage.GetVelocityRequest_Payload{
-					Start: &start,
-					End:   &end,
+					Start:     &start,
+					End:       &end,
+					CreatorId: "1",
 				},
 			}
 			request, err := proto.Marshal(requestMessage)

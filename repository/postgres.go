@@ -39,14 +39,14 @@ func (p *Postgres) DropDailyCounts() error {
 }
 
 // GetDailyCounts returns velocity score for each day between start and end (inclusive)
-func (p *Postgres) GetDailyCounts(start time.Time, end time.Time) (domain.DailyCounts, error) {
+func (p *Postgres) GetDailyCounts(creatorID string, start time.Time, end time.Time) (domain.DailyCounts, error) {
 	rows, err := p.Connection.Query(`
 SELECT count, day, creator_id
 FROM daily_counts
 WHERE creator_id = $1
 AND day >= $2
 AND day <= $3
-`, "1", start, end)
+`, creatorID, start, end)
 	if err != nil {
 		return nil, errors.Wrap(err, "db query failed")
 	}
