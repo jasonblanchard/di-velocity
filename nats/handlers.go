@@ -78,7 +78,7 @@ func handleEntryUpdated() natsby.HandlerFunc {
 			return
 		}
 
-		c.Engine.NatsConnection.Publish("insights.increment.dailyCounter", request)
+		c.NatsConnection.Publish("insights.increment.dailyCounter", request)
 	}
 }
 
@@ -160,7 +160,7 @@ func Recovery(container *container.Container) natsby.RecoveryFunc {
 		if c.Msg.Reply != "" {
 			errorMessage := &errorMessage.Error{}
 			message, _ := proto.Marshal(errorMessage)
-			c.Engine.NatsConnection.Publish(c.Msg.Reply, message)
+			c.NatsConnection.Publish(c.Msg.Reply, message)
 		}
 	}
 }
