@@ -4,7 +4,6 @@ namespace: di
 resources:
 - sa.yaml
 - deployment.yaml
-- application.yaml
 images:
 - name: jasonblanchard/di-velocity
   newTag: latest
