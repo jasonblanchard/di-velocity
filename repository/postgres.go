@@ -20,6 +20,7 @@ func NewPostgres(user string, password string, dbname string, host string) (*Pos
 
 	connStr := fmt.Sprintf("user=%s password=%s host=%s dbname=%s sslmode=disable", user, password, host, dbname)
 	connection, err := sql.Open("postgres", connStr)
+	connection.SetMaxIdleConns(0) // Let Aurora sleep if no connections present.
 	// Ensure a healthy DB connection
 	err = connection.Ping()
 	if err != nil {
