@@ -49,6 +49,10 @@ func main() {
 	engine.Use(natsby.WithLogger(container.Logger))
 	engine.Use(natsby.WithCustomRecovery(Recovery(container)))
 
+	collector := natsby.NewPrometheusCollector("2112")
+	observer := natsby.NewDefaultObserver(collector)
+	engine.Use(natsby.WithMetrics(observer))
+
 	SubscribeHandlers(container, engine)
 
 	engine.Run(func() {

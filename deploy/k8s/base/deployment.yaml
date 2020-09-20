@@ -18,6 +18,9 @@ spec:
         vault.security.banzaicloud.io/vault-addr: https://vault.vault:8200
         vault.security.banzaicloud.io/vault-role: di-velocity
         vault.security.banzaicloud.io/vault-skip-verify: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "2112"
+        prometheus.io/scrape: "true"
     spec:
       serviceAccountName: velocity
       containers:
@@ -42,5 +45,7 @@ spec:
         #     - /usr/src/app/HEALTH_STATUS
           # initialDelaySeconds: 5
           # periodSeconds: 5
-        # ports:
-        # - containerPort: 4000
+        ports:
+        - containerPort: 2112
+          name: prometheus
+          protocol: TCP
