@@ -11,7 +11,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o ${SERVICE_NAME} -v ./nats
+RUN go build -o ${SERVICE_NAME} -v ./pkg/nats
 
 FROM ubuntu AS run
 ARG BUILD_DIR
