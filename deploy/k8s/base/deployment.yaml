@@ -1,19 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: velocity
   name: velocity
-  namespace: di
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: velocity
   template:
     metadata:
-      labels:
-        app: velocity
       annotations:
         vault.security.banzaicloud.io/vault-addr: https://vault.vault:8200
         vault.security.banzaicloud.io/vault-role: di-velocity
