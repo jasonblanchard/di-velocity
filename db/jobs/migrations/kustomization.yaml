@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: di
+namespace: di-production
 resources:
 - migrations.yaml
 nameSuffix: "-6156c57d773fd35d17845bf92cc70e78a7bcd914" # {"$ref":"#/definitions/io.k8s.cli.substitutions.name-suffix"}
@@ -9,7 +9,7 @@ images:
   newTag: "6156c57d773fd35d17845bf92cc70e78a7bcd914" # {"$ref":"#/definitions/io.k8s.cli.setters.tag"}
 configMapGenerator:
 - name: velocity-migrations-config
-  namespace: di
+  namespace: di-production
   literals:
   - USER=postgres
   - PASSWORD=vault:secret/data/di-velocity/production/app#DB_PASSWORD

@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: di-velocity-migrations
-  namespace: di
+  namespace: di-production
 spec:
   template:
     metadata:
